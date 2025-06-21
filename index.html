@@ -76,6 +76,12 @@
 .submit-btn:hover {
   background-color: #008f46;
 }
+.chart-subtitle {
+  text-align: center;
+  margin: 5px 0 15px 0;
+  font-weight: 600;
+  font-size: 16px;
+}
   </style>
 </head>
 <body>
@@ -157,8 +163,9 @@
     <option value="DLO">DLO</option>
   </select>
 </h4>
-<h5 id="attendance_chart_title">Attendance</h5>
+<h5 id="attendance_chart_title" class="chart-subtitle">Attendance</h5>
 <div id="attendance_chart" style="width: 100%; height: 300px;"></div>
+
 
 <!-- Vehicle section -->
 <h4>
@@ -169,8 +176,9 @@
     <option value="Van Use">Van Use</option>
   </select>
 </h4>
-<h5 id="vehicle_chart_title">Vehicle</h5>
+<h5 id="vehicle_chart_title" class="chart-subtitle">Vehicle</h5>
 <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
+
 
 
 <script>
