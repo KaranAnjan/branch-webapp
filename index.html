@@ -21,6 +21,16 @@
       padding: 10px 20px;
       margin: 5px;
       font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background-color: #00A651;
+      color: white;
+    }
+    .tabs button:not(.active) {
+      background-color: #eee;
+      color: #333;
     }
     .tab {
       display: none;
@@ -38,8 +48,11 @@
       margin: 5px 0 15px;
       font-size: 16px;
     }
-    #attendanceSelector {
-      margin-bottom: 20px;
+    label {
+      font-weight: bold;
+    }
+    select {
+      font-size: 16px;
     }
   </style>
 </head>
@@ -48,12 +61,12 @@
   <h2>Branch Data Web App</h2>
 
   <div class="tabs">
-    <button onclick="showTab('entry')">Data Entry</button>
-    <button onclick="showTab('dashboard')">Dashboard</button>
+    <button id="entryBtn" onclick="showTab('entry')">Data Entry</button>
+    <button id="dashboardBtn" onclick="showTab('dashboard')">Dashboard</button>
   </div>
 
   <!-- DATA ENTRY TAB -->
-  <div id="entry" class="tab active">
+  <div id="entry" class="tab">
     <h3>Data Entry</h3>
     <form id="branchForm">
       <label>Branch Name:</label>
@@ -117,23 +130,41 @@
     <div id="delivery_chart" style="width: 100%; height: 300px;"></div>
     <div id="hold_chart" style="width: 100%; height: 300px;"></div>
 
-    <label for="attendanceSelector"><b>Attendance Type:</b></label>
+    <label><b>Attendance:</b></label>
     <select id="attendanceSelector" onchange="drawAttendanceChart()">
+      <option value="ALL">ALL</option>
       <option value="DB">DB</option>
       <option value="GH">GH</option>
       <option value="DLO">DLO</option>
     </select>
     <div id="attendance_chart" style="width: 100%; height: 300px;"></div>
 
+    <label><b>Vehicle:</b></label>
+    <select id="vehicleSelector" onchange="drawVehicleChart()">
+      <option value="ALL">ALL</option>
+      <option value="Vehicle Use">Vehicle Use</option>
+      <option value="Van Use">Van Use</option>
+    </select>
     <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
   </div>
 
 <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your Apps Script URL
+  const scriptURL = 'YOUR_WEB_APP_URL'; // Replace with your Apps Script URL
 
   function showTab(tabName) {
+    // Hide all tabs
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
+
+    // Update active button styles
+    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+    if (tabName === 'entry') {
+      document.getElementById('entryBtn').classList.add('active');
+    } else {
+      document.getElementById('dashboardBtn').classList.add('active');
+    }
+
+    // If dashboard, draw charts
     if (tabName === 'dashboard') {
       drawCharts();
     }
@@ -186,7 +217,12 @@
     });
 
     const dataTable = google.visualization.arrayToDataTable(chartData);
-    const options = { title: 'Delivery: Retail vs WS Value', chartArea: {width: '60%'}, hAxis: {title: 'Value'}, vAxis: {title: 'Branch'} };
+    const options = { 
+      chartArea: {width: '60%'},
+      colors: ['#00A651', '#22265C'],
+      hAxis: {textPosition: 'none'},
+      vAxis: {textPosition: 'none'}
+    };
     const chart = new google.visualization.BarChart(document.getElementById('delivery_chart'));
     chart.draw(dataTable, options);
   }
@@ -198,36 +234,66 @@
     });
 
     const dataTable = google.visualization.arrayToDataTable(chartData);
-    const options = { title: 'Hold Delivery: Retail Hold vs WS Hold', chartArea: {width: '60%'}, hAxis: {title: 'Value'}, vAxis: {title: 'Branch'} };
+    const options = { 
+      chartArea: {width: '60%'},
+      colors: ['#00A651', '#22265C'],
+      hAxis: {textPosition: 'none'},
+      vAxis: {textPosition: 'none'}
+    };
     const chart = new google.visualization.BarChart(document.getElementById('hold_chart'));
     chart.draw(dataTable, options);
   }
 
   function drawAttendanceChart() {
     const type = document.getElementById('attendanceSelector').value;
-    const chartData = [['Branch', type]];
+    const chartData = [['Branch', 'Attendance']];
     globalData.forEach(row => {
-      const value = Number(row['Attendance ' + type]);
+      let value = 0;
+      if (type === 'ALL') {
+        value = Number(row['Attendance DB']) + Number(row['Attendance GH']) + Number(row['Attendance DLO']);
+      } else {
+        value = Number(row['Attendance ' + type]);
+      }
       chartData.push([row['Branch Name'], value]);
     });
 
     const dataTable = google.visualization.arrayToDataTable(chartData);
-    const options = { title: 'Attendance: ' + type, chartArea: {width: '60%'}, hAxis: {title: 'Count'}, vAxis: {title: 'Branch'} };
+    const options = { 
+      chartArea: {width: '60%'},
+      colors: ['#00A651'],
+      hAxis: {textPosition: 'none'},
+      vAxis: {textPosition: 'none'}
+    };
     const chart = new google.visualization.ColumnChart(document.getElementById('attendance_chart'));
     chart.draw(dataTable, options);
   }
 
   function drawVehicleChart() {
-    const chartData = [['Branch', 'Vehicle Use', 'Van Use']];
+    const type = document.getElementById('vehicleSelector').value;
+    const chartData = [['Branch', 'Vehicle']];
     globalData.forEach(row => {
-      chartData.push([row['Branch Name'], Number(row['Vehicle Use']), Number(row['Van Use'])]);
+      let value = 0;
+      if (type === 'ALL') {
+        value = Number(row['Vehicle Use']) + Number(row['Van Use']);
+      } else {
+        value = Number(row[type]);
+      }
+      chartData.push([row['Branch Name'], value]);
     });
 
     const dataTable = google.visualization.arrayToDataTable(chartData);
-    const options = { title: 'Vehicle & Van Use', chartArea: {width: '60%'}, hAxis: {title: 'Count'}, vAxis: {title: 'Branch'} };
-    const chart = new google.visualization.BarChart(document.getElementById('vehicle_chart'));
+    const options = { 
+      chartArea: {width: '60%'},
+      colors: ['#22265C'],
+      hAxis: {textPosition: 'none'},
+      vAxis: {textPosition: 'none'}
+    };
+    const chart = new google.visualization.ColumnChart(document.getElementById('vehicle_chart'));
     chart.draw(dataTable, options);
   }
+
+  // ✅ On page load: show dashboard by default
+  window.onload = () => showTab('dashboard');
 
 </script>
 
