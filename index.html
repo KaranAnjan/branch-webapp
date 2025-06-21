@@ -140,7 +140,6 @@
 </form>
   </div>
 
-
   <!-- DASHBOARD TAB -->
   <div id="dashboard" class="tab">
     <h3>Dashboard</h3>
@@ -148,23 +147,31 @@
     <div id="delivery_chart" style="width: 100%; height: 300px;"></div>
     <div id="hold_chart" style="width: 100%; height: 300px;"></div>
 
-    <label><b>Attendance:</b></label>
-    <select id="attendanceSelector" onchange="drawAttendanceChart()">
-      <option value="ALL">ALL</option>
-      <option value="DB">DB</option>
-      <option value="GH">GH</option>
-      <option value="DLO">DLO</option>
-    </select>
-    <div id="attendance_chart" style="width: 100%; height: 300px;"></div>
+<!-- Attendance section -->
+<h4>
+  Attendance:
+  <select id="attendanceSelector" onchange="drawAttendanceChart()">
+    <option value="ALL">ALL</option>
+    <option value="DB">DB</option>
+    <option value="GH">GH</option>
+    <option value="DLO">DLO</option>
+  </select>
+</h4>
+<h5 id="attendance_chart_title">Attendance</h5>
+<div id="attendance_chart" style="width: 100%; height: 300px;"></div>
 
-    <label><b>Vehicle:</b></label>
-    <select id="vehicleSelector" onchange="drawVehicleChart()">
-      <option value="ALL">ALL</option>
-      <option value="Vehicle Use">Vehicle Use</option>
-      <option value="Van Use">Van Use</option>
-    </select>
-    <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
-  </div>
+<!-- Vehicle section -->
+<h4>
+  Vehicle:
+  <select id="vehicleSelector" onchange="drawVehicleChart()">
+    <option value="ALL">ALL</option>
+    <option value="Vehicle Use">Vehicle Use</option>
+    <option value="Van Use">Van Use</option>
+  </select>
+</h4>
+<h5 id="vehicle_chart_title">Vehicle</h5>
+<div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
+
 
 <script>
   const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your Apps Script URL
@@ -237,6 +244,7 @@
   const dataTable = google.visualization.arrayToDataTable(chartData);
   const options = { 
     title: 'Delivery: Retail vs WS Value',
+	legend: { position: 'top' },
     chartArea: {width: '60%'},
     colors: ['#00A651', '#22265C'],
     hAxis: { title: '', textPosition: 'out' },
@@ -255,6 +263,7 @@ function drawHoldChart() {
   const dataTable = google.visualization.arrayToDataTable(chartData);
   const options = { 
     title: 'Hold Delivery: Retail Hold vs WS Hold',
+	legend: { position: 'top' },
     chartArea: {width: '60%'},
     colors: ['#00A651', '#22265C'],
     hAxis: { title: '', textPosition: 'out' },
@@ -266,21 +275,26 @@ function drawHoldChart() {
 
 function drawAttendanceChart() {
   const type = document.getElementById('attendanceSelector').value;
+
+  // ✅ Chart title: Attendance ALL → Attendance DB
+  const chartTitle = document.getElementById('attendance_chart_title');
+  chartTitle.innerText = type === 'ALL' ? 'Attendance' : `Attendance ${type}`;
+
   const chartData = [['Branch', 'Attendance']];
   globalData.forEach(row => {
     let value = 0;
     if (type === 'ALL') {
       value = Number(row['Attendance DB']) + Number(row['Attendance GH']) + Number(row['Attendance DLO']);
     } else {
-      value = Number(row['Attendance ' + type]);
+      value = Number(row[`Attendance ${type}`]);
     }
     chartData.push([row['Branch Name'], value]);
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
-  const options = { 
-    title: 'Attendance',
-    chartArea: {width: '60%'},
+  const options = {
+    legend: 'none',
+    chartArea: { width: '60%' },
     colors: ['#00A651'],
     hAxis: { title: '', textPosition: 'out' },
     vAxis: { title: '', textPosition: 'out' }
@@ -291,6 +305,11 @@ function drawAttendanceChart() {
 
 function drawVehicleChart() {
   const type = document.getElementById('vehicleSelector').value;
+
+  // ✅ Chart title: Vehicle ALL → Vehicle Van Use
+  const chartTitle = document.getElementById('vehicle_chart_title');
+  chartTitle.innerText = type === 'ALL' ? 'Vehicle' : `Vehicle ${type}`;
+
   const chartData = [['Branch', 'Vehicle']];
   globalData.forEach(row => {
     let value = 0;
@@ -303,9 +322,9 @@ function drawVehicleChart() {
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
-  const options = { 
-    title: 'Vehicle',
-    chartArea: {width: '60%'},
+  const options = {
+    legend: 'none',
+    chartArea: { width: '60%' },
     colors: ['#22265C'],
     hAxis: { title: '', textPosition: 'out' },
     vAxis: { title: '', textPosition: 'out' }
