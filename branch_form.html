@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Branch Data App</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .tab { display: none; }
+    .tab.active { display: block; }
+    button { margin: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>Branch Data Web App</h2>
+
+  <button onclick="showTab('entry')">Data Entry</button>
+  <button onclick="showTab('dashboard')">Dashboard</button>
+
+  <!-- DATA ENTRY TAB -->
+  <div id="entry" class="tab active">
+    <h3>Data Entry</h3>
+    <form id="branchForm">
+      Branch Name:
+      <select name="branchName" required>
+        <option value="">--Select Branch--</option>
+        <option>Baghajatin</option>
+        <option>Behala</option>
+        <option>Dunlop</option>
+        <option>Park Circus</option>
+        <option>Rajarhat</option>
+        <option>Taratala</option>
+      </select><br><br>
+
+      Retail: <input type="number" name="retail"><br>
+      Retail Value: <input type="number" name="retailValue"><br>
+      WS: <input type="number" name="ws"><br>
+      WS Value: <input type="number" name="wsValue"><br><br>
+
+      Retail Hold: <input type="number" name="retailHold"><br>
+      Retail Hold Value: <input type="number" name="retailHoldValue"><br>
+      WS Hold: <input type="number" name="wsHold"><br>
+      WS Hold Value: <input type="number" name="wsHoldValue"><br><br>
+
+      Attendance DB: <input type="number" name="attendanceDB"><br>
+      Attendance GH: <input type="number" name="attendanceGH"><br>
+      Attendance DLO: <input type="number" name="attendanceDLO"><br><br>
+
+      Vehicle Use: <input type="number" name="vehicleUse"><br>
+      Van Use: <input type="number" name="vanUse"><br><br>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="dashboard" class="tab">
+    <h3>Dashboard</h3>
+    <div id="chart_div"></div>
+  </div>
+
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your deployed Apps Script URL
+
+  function showTab(tabName) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    if (tabName === 'dashboard') {
+      drawChart();
+    }
+  }
+
+  // Handle form submit
+  const form = document.getElementById('branchForm');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+      alert('Data submitted successfully!');
+      form.reset();
+    })
+    .catch(err => {
+      alert('Error submitting data');
+      console.error(err);
+    });
+  });
+
+  // Load Google Charts
+  google.charts.load('current', {packages: ['corechart']});
+
+  function drawChart() {
+    fetch(scriptURL)
+    .then(res => res.json())
+    .then(data => {
+      // Prepare data
+      const chartData = [['Branch', 'Retail Value', 'WS Value']];
+      data.forEach(row => {
+        chartData.push([row['Branch Name'], Number(row['Retail Value']), Number(row['WS Value'])]);
+      });
+
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+
+      const options = {
+        title: 'Retail vs WS Value by Branch',
+        chartArea: {width: '50%'},
+        hAxis: {title: 'Value'},
+        vAxis: {title: 'Branch'}
+      };
+
+      const chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+      chart.draw(dataTable, options);
+    });
+  }
+</script>
+
+</body>
+</html>
