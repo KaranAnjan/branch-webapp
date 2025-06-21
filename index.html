@@ -261,14 +261,22 @@ function drawDeliveryChart() {
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
 
+  // ✅ Calculate max total for tight X-axis
+  const totals = chartData.slice(1).map(row => row[1] + row[2]); // Retail + WS
+  const maxTotal = Math.max(...totals);
+
   const options = { 
     title: 'Delivery: Retail + WS Total (in Lakh)',
     legend: { position: 'top' },
-    chartArea: { width: '60%' },
+    chartArea: { 
+      left: 120,
+      right: 20,
+      width: '100%'
+    },
     colors: ['#00A651', '#22265C'],
-    isStacked: true,  // ✅ stacked bar
+    isStacked: true,
     annotations: {
-      alwaysOutside: true, // total only
+      alwaysOutside: true,
       textStyle: {
         fontSize: 12,
         color: '#000',
@@ -276,6 +284,9 @@ function drawDeliveryChart() {
       }
     },
     hAxis: {
+      viewWindow: {
+        max: maxTotal * 1.1  // ✅ Add 10% headroom for nice look
+      },
       title: 'Value (Lakh)',
       textPosition: 'out',
       gridlines: { count: 0 }
@@ -289,7 +300,6 @@ function drawDeliveryChart() {
   const chart = new google.visualization.BarChart(document.getElementById('delivery_chart'));
   chart.draw(dataTable, options);
 }
-
 
 
 function drawHoldChart() {
