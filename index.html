@@ -243,52 +243,112 @@
     });
   }
 
- function drawDeliveryChart() {
-  const chartData = [['Branch', 'Retail Value', 'WS Value']];
+function drawDeliveryChart() {
+  const chartData = [
+    ['Branch', 'Retail Value', 'WS Value', { role: 'annotation' }]
+  ];
+
   globalData.forEach(row => {
-    chartData.push([row['Branch Name'], Number(row['Retail Value']), Number(row['WS Value'])]);
+    const retailRaw = Number(row['Retail Value']) || 0;
+    const wsRaw = Number(row['WS Value']) || 0;
+
+    const retail = +(retailRaw / 100000).toFixed(2);
+    const ws = +(wsRaw / 100000).toFixed(2);
+    const total = +(retail + ws).toFixed(2);
+
+    chartData.push([row['Branch Name'], retail, ws, total]);
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
+
   const options = { 
-    title: 'Delivery: Retail vs WS Value',
-	legend: { position: 'top' },
-    chartArea: {width: '60%'},
+    title: 'Delivery: Retail + WS Total (in Lakh)',
+    legend: { position: 'top' },
+    chartArea: { width: '60%' },
     colors: ['#00A651', '#22265C'],
-    hAxis: { title: '', textPosition: 'out' },
-    vAxis: { title: '', textPosition: 'out' }
+    isStacked: true,  // ✅ stacked bar
+    annotations: {
+      alwaysOutside: true, // total only
+      textStyle: {
+        fontSize: 12,
+        color: '#000',
+        auraColor: 'none'
+      }
+    },
+    hAxis: {
+      title: 'Value (Lakh)',
+      textPosition: 'out',
+      gridlines: { count: 0 }
+    },
+    vAxis: {
+      textPosition: 'out',
+      gridlines: { color: 'transparent' }
+    }
   };
+
   const chart = new google.visualization.BarChart(document.getElementById('delivery_chart'));
   chart.draw(dataTable, options);
 }
 
+
+
 function drawHoldChart() {
-  const chartData = [['Branch', 'Retail Hold Value', 'WS Hold Value']];
+  const chartData = [
+    ['Branch', 'Retail Hold Value', 'WS Hold Value', { role: 'annotation' }]
+  ];
+
   globalData.forEach(row => {
-    chartData.push([row['Branch Name'], Number(row['Retail Hold Value']), Number(row['WS Hold Value'])]);
+    const retailHold = Number(row['Retail Hold Value']) || 0;
+    const wsHold = Number(row['WS Hold Value']) || 0;
+
+    const retail = +(retailHold / 100000).toFixed(2);
+    const ws = +(wsHold / 100000).toFixed(2);
+    const total = +(retail + ws).toFixed(2);
+
+    chartData.push([row['Branch Name'], retail, ws, total]);
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
+
   const options = { 
-    title: 'Hold Delivery: Retail Hold vs WS Hold',
-	legend: { position: 'top' },
-    chartArea: {width: '60%'},
+    title: 'Hold Delivery: Retail Hold + WS Hold (in Lakh)',
+    legend: { position: 'top' },
+    chartArea: { width: '60%' },
     colors: ['#00A651', '#22265C'],
-    hAxis: { title: '', textPosition: 'out' },
-    vAxis: { title: '', textPosition: 'out' }
+    isStacked: true,
+    annotations: {
+      alwaysOutside: true,
+      textStyle: {
+        fontSize: 12,
+        color: '#000',
+        auraColor: 'none'
+      }
+    },
+    hAxis: {
+      title: 'Value (Lakh)',
+      textPosition: 'out',
+      gridlines: { count: 0 }
+    },
+    vAxis: {
+      textPosition: 'out',
+      gridlines: { color: 'transparent' }
+    }
   };
+
   const chart = new google.visualization.BarChart(document.getElementById('hold_chart'));
   chart.draw(dataTable, options);
 }
 
+
 function drawAttendanceChart() {
   const type = document.getElementById('attendanceSelector').value;
 
-  // ✅ Chart title: Attendance ALL → Attendance DB
+  // ✅ Update chart title
   const chartTitle = document.getElementById('attendance_chart_title');
   chartTitle.innerText = type === 'ALL' ? 'Attendance' : `Attendance ${type}`;
 
-  const chartData = [['Branch', 'Attendance']];
+  // ✅ Build data
+  const chartData = [['Branch', 'Attendance', { role: 'annotation' }]];
   globalData.forEach(row => {
     let value = 0;
     if (type === 'ALL') {
@@ -296,29 +356,49 @@ function drawAttendanceChart() {
     } else {
       value = Number(row[`Attendance ${type}`]);
     }
-    chartData.push([row['Branch Name'], value]);
+    chartData.push([row['Branch Name'], value, value]); // ✅ add annotation column
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
+
   const options = {
     legend: 'none',
     chartArea: { width: '60%' },
     colors: ['#00A651'],
-    hAxis: { title: '', textPosition: 'out' },
-    vAxis: { title: '', textPosition: 'out' }
+    annotations: {
+      alwaysOutside: true,
+      textStyle: {
+        fontSize: 12,
+        color: '#000',
+        auraColor: 'none'
+      }
+    },
+    hAxis: {
+      title: '',
+      textPosition: 'out',
+      gridlines: { count: 0 } // ✅ remove grid
+    },
+    vAxis: {
+      title: '',
+      textPosition: 'out',
+      gridlines: { color: 'transparent' } // ✅ remove grid
+    }
   };
+
   const chart = new google.visualization.ColumnChart(document.getElementById('attendance_chart'));
   chart.draw(dataTable, options);
 }
 
+
 function drawVehicleChart() {
   const type = document.getElementById('vehicleSelector').value;
 
-  // ✅ Chart title: Vehicle ALL → Vehicle Van Use
+  // ✅ Update chart title
   const chartTitle = document.getElementById('vehicle_chart_title');
   chartTitle.innerText = type === 'ALL' ? 'Vehicle' : `Vehicle ${type}`;
 
-  const chartData = [['Branch', 'Vehicle']];
+  // ✅ Build data with annotations
+  const chartData = [['Branch', 'Vehicle', { role: 'annotation' }]];
   globalData.forEach(row => {
     let value = 0;
     if (type === 'ALL') {
@@ -326,20 +406,39 @@ function drawVehicleChart() {
     } else {
       value = Number(row[type]);
     }
-    chartData.push([row['Branch Name'], value]);
+    chartData.push([row['Branch Name'], value, value]); // ✅ Add annotation
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
+
   const options = {
     legend: 'none',
     chartArea: { width: '60%' },
     colors: ['#22265C'],
-    hAxis: { title: '', textPosition: 'out' },
-    vAxis: { title: '', textPosition: 'out' }
+    annotations: {
+      alwaysOutside: true,  // ✅ show on top
+      textStyle: {
+        fontSize: 12,
+        color: '#000',
+        auraColor: 'none'
+      }
+    },
+    hAxis: {
+      title: '',
+      textPosition: 'out',
+      gridlines: { count: 0 } // ✅ remove grid
+    },
+    vAxis: {
+      title: '',
+      textPosition: 'out',
+      gridlines: { color: 'transparent' } // ✅ remove grid
+    }
   };
+
   const chart = new google.visualization.ColumnChart(document.getElementById('vehicle_chart'));
   chart.draw(dataTable, options);
 }
+
 
   // ✅ On page load: show dashboard by default
   window.onload = () => showTab('dashboard');
