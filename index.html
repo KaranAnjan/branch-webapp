@@ -54,6 +54,28 @@
     select {
       font-size: 16px;
     }
+	form h4 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #22265C;
+  border-bottom: 2px solid #00A651;
+  padding-bottom: 5px;
+}
+
+.submit-btn {
+  background-color: #00A651;
+  color: white;
+  font-size: 18px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background-color: #008f46;
+}
   </style>
 </head>
 <body>
@@ -68,60 +90,56 @@
   <!-- DATA ENTRY TAB -->
   <div id="entry" class="tab">
     <h3>Data Entry</h3>
-    <form id="branchForm">
-      <label>Branch Name:</label>
-      <select name="branchName" required>
-        <option value="">--Select Branch--</option>
-        <option>Baghajatin</option>
-        <option>Behala</option>
-        <option>Dunlop</option>
-        <option>Park Circus</option>
-        <option>Rajarhat</option>
-        <option>Taratala</option>
-      </select>
+<form id="branchForm">
+  <label>Branch Name:</label>
+  <select name="branchName" required>
+    <option value="">--Select Branch--</option>
+    <option>Baghajatin</option>
+    <option>Behala</option>
+    <option>Dunlop</option>
+    <option>Park Circus</option>
+    <option>Rajarhat</option>
+    <option>Taratala</option>
+  </select>
 
-      <label>Retail:</label>
-      <input type="number" name="retail">
+  <h4>📦 Delivery Details</h4>
+  <label>Retail Count:</label>
+  <input type="number" name="retail">
+  <label>Retail Value:</label>
+  <input type="number" name="retailValue">
+  <label>WS Count:</label>
+  <input type="number" name="ws">
+  <label>WS Value:</label>
+  <input type="number" name="wsValue">
 
-      <label>Retail Value:</label>
-      <input type="number" name="retailValue">
+  <h4>🕑 Pending Details</h4>
+  <label>Retail Hold Count:</label>
+  <input type="number" name="retailHold">
+  <label>Retail Hold Value:</label>
+  <input type="number" name="retailHoldValue">
+  <label>WS Hold Count:</label>
+  <input type="number" name="wsHold">
+  <label>WS Hold Value:</label>
+  <input type="number" name="wsHoldValue">
 
-      <label>WS:</label>
-      <input type="number" name="ws">
+  <h4>👥 Attendance</h4>
+  <label>Attendance DB:</label>
+  <input type="number" name="attendanceDB">
+  <label>Attendance GH:</label>
+  <input type="number" name="attendanceGH">
+  <label>Attendance DLO:</label>
+  <input type="number" name="attendanceDLO">
 
-      <label>WS Value:</label>
-      <input type="number" name="wsValue">
+  <h4>🚚 Vehicle</h4>
+  <label>Vehicle Use:</label>
+  <input type="number" name="vehicleUse">
+  <label>Van Use:</label>
+  <input type="number" name="vanUse">
 
-      <label>Retail Hold:</label>
-      <input type="number" name="retailHold">
-
-      <label>Retail Hold Value:</label>
-      <input type="number" name="retailHoldValue">
-
-      <label>WS Hold:</label>
-      <input type="number" name="wsHold">
-
-      <label>WS Hold Value:</label>
-      <input type="number" name="wsHoldValue">
-
-      <label>Attendance DB:</label>
-      <input type="number" name="attendanceDB">
-
-      <label>Attendance GH:</label>
-      <input type="number" name="attendanceGH">
-
-      <label>Attendance DLO:</label>
-      <input type="number" name="attendanceDLO">
-
-      <label>Vehicle Use:</label>
-      <input type="number" name="vehicleUse">
-
-      <label>Van Use:</label>
-      <input type="number" name="vanUse">
-
-      <button type="submit">Submit</button>
-    </form>
+  <button type="submit" class="submit-btn">Submit</button>
+</form>
   </div>
+
 
   <!-- DASHBOARD TAB -->
   <div id="dashboard" class="tab">
