@@ -264,11 +264,15 @@ function drawDeliveryChart() {
   const options = { 
     title: 'Delivery: Retail + WS Total (in Lakh)',
     legend: { position: 'top' },
-    chartArea: { width: '60%' },
+    chartArea: { 
+      width: '90%',  // ✅ use 90% of container width
+      left: '5%',    // ✅ add small left padding
+      right: '5%'    // ✅ add small right padding
+    },
     colors: ['#00A651', '#22265C'],
-    isStacked: true,  // ✅ stacked bar
+    isStacked: true,
     annotations: {
-      alwaysOutside: true, // total only
+      alwaysOutside: true,
       textStyle: {
         fontSize: 12,
         color: '#000',
