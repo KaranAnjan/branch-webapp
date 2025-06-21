@@ -1,27 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Branch Data App</title>
+  <title>Branch Data Web App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; }
-    .tab { display: none; }
-    .tab.active { display: block; }
-    button { margin: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      line-height: 1.6;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    .tabs {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .tabs button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+    }
+    form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    form input, form select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 15px;
+      font-size: 16px;
+    }
+    #attendanceSelector {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
 
   <h2>Branch Data Web App</h2>
 
-  <button onclick="showTab('entry')">Data Entry</button>
-  <button onclick="showTab('dashboard')">Dashboard</button>
+  <div class="tabs">
+    <button onclick="showTab('entry')">Data Entry</button>
+    <button onclick="showTab('dashboard')">Dashboard</button>
+  </div>
 
   <!-- DATA ENTRY TAB -->
   <div id="entry" class="tab active">
     <h3>Data Entry</h3>
     <form id="branchForm">
-      Branch Name:
+      <label>Branch Name:</label>
       <select name="branchName" required>
         <option value="">--Select Branch--</option>
         <option>Baghajatin</option>
@@ -30,24 +65,46 @@
         <option>Park Circus</option>
         <option>Rajarhat</option>
         <option>Taratala</option>
-      </select><br><br>
+      </select>
 
-      Retail: <input type="number" name="retail"><br>
-      Retail Value: <input type="number" name="retailValue"><br>
-      WS: <input type="number" name="ws"><br>
-      WS Value: <input type="number" name="wsValue"><br><br>
+      <label>Retail:</label>
+      <input type="number" name="retail">
 
-      Retail Hold: <input type="number" name="retailHold"><br>
-      Retail Hold Value: <input type="number" name="retailHoldValue"><br>
-      WS Hold: <input type="number" name="wsHold"><br>
-      WS Hold Value: <input type="number" name="wsHoldValue"><br><br>
+      <label>Retail Value:</label>
+      <input type="number" name="retailValue">
 
-      Attendance DB: <input type="number" name="attendanceDB"><br>
-      Attendance GH: <input type="number" name="attendanceGH"><br>
-      Attendance DLO: <input type="number" name="attendanceDLO"><br><br>
+      <label>WS:</label>
+      <input type="number" name="ws">
 
-      Vehicle Use: <input type="number" name="vehicleUse"><br>
-      Van Use: <input type="number" name="vanUse"><br><br>
+      <label>WS Value:</label>
+      <input type="number" name="wsValue">
+
+      <label>Retail Hold:</label>
+      <input type="number" name="retailHold">
+
+      <label>Retail Hold Value:</label>
+      <input type="number" name="retailHoldValue">
+
+      <label>WS Hold:</label>
+      <input type="number" name="wsHold">
+
+      <label>WS Hold Value:</label>
+      <input type="number" name="wsHoldValue">
+
+      <label>Attendance DB:</label>
+      <input type="number" name="attendanceDB">
+
+      <label>Attendance GH:</label>
+      <input type="number" name="attendanceGH">
+
+      <label>Attendance DLO:</label>
+      <input type="number" name="attendanceDLO">
+
+      <label>Vehicle Use:</label>
+      <input type="number" name="vehicleUse">
+
+      <label>Van Use:</label>
+      <input type="number" name="vanUse">
 
       <button type="submit">Submit</button>
     </form>
@@ -56,17 +113,29 @@
   <!-- DASHBOARD TAB -->
   <div id="dashboard" class="tab">
     <h3>Dashboard</h3>
-    <div id="chart_div"></div>
+
+    <div id="delivery_chart" style="width: 100%; height: 300px;"></div>
+    <div id="hold_chart" style="width: 100%; height: 300px;"></div>
+
+    <label for="attendanceSelector"><b>Attendance Type:</b></label>
+    <select id="attendanceSelector" onchange="drawAttendanceChart()">
+      <option value="DB">DB</option>
+      <option value="GH">GH</option>
+      <option value="DLO">DLO</option>
+    </select>
+    <div id="attendance_chart" style="width: 100%; height: 300px;"></div>
+
+    <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
   </div>
 
 <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your deployed Apps Script URL
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your Apps Script URL
 
   function showTab(tabName) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
     if (tabName === 'dashboard') {
-      drawChart();
+      drawCharts();
     }
   }
 
@@ -96,29 +165,70 @@
   // Load Google Charts
   google.charts.load('current', {packages: ['corechart']});
 
-  function drawChart() {
+  let globalData = [];
+
+  function drawCharts() {
     fetch(scriptURL)
     .then(res => res.json())
     .then(data => {
-      // Prepare data
-      const chartData = [['Branch', 'Retail Value', 'WS Value']];
-      data.forEach(row => {
-        chartData.push([row['Branch Name'], Number(row['Retail Value']), Number(row['WS Value'])]);
-      });
-
-      const dataTable = google.visualization.arrayToDataTable(chartData);
-
-      const options = {
-        title: 'Retail vs WS Value by Branch',
-        chartArea: {width: '50%'},
-        hAxis: {title: 'Value'},
-        vAxis: {title: 'Branch'}
-      };
-
-      const chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-      chart.draw(dataTable, options);
+      globalData = data;
+      drawDeliveryChart();
+      drawHoldChart();
+      drawAttendanceChart();
+      drawVehicleChart();
     });
   }
+
+  function drawDeliveryChart() {
+    const chartData = [['Branch', 'Retail Value', 'WS Value']];
+    globalData.forEach(row => {
+      chartData.push([row['Branch Name'], Number(row['Retail Value']), Number(row['WS Value'])]);
+    });
+
+    const dataTable = google.visualization.arrayToDataTable(chartData);
+    const options = { title: 'Delivery: Retail vs WS Value', chartArea: {width: '60%'}, hAxis: {title: 'Value'}, vAxis: {title: 'Branch'} };
+    const chart = new google.visualization.BarChart(document.getElementById('delivery_chart'));
+    chart.draw(dataTable, options);
+  }
+
+  function drawHoldChart() {
+    const chartData = [['Branch', 'Retail Hold Value', 'WS Hold Value']];
+    globalData.forEach(row => {
+      chartData.push([row['Branch Name'], Number(row['Retail Hold Value']), Number(row['WS Hold Value'])]);
+    });
+
+    const dataTable = google.visualization.arrayToDataTable(chartData);
+    const options = { title: 'Hold Delivery: Retail Hold vs WS Hold', chartArea: {width: '60%'}, hAxis: {title: 'Value'}, vAxis: {title: 'Branch'} };
+    const chart = new google.visualization.BarChart(document.getElementById('hold_chart'));
+    chart.draw(dataTable, options);
+  }
+
+  function drawAttendanceChart() {
+    const type = document.getElementById('attendanceSelector').value;
+    const chartData = [['Branch', type]];
+    globalData.forEach(row => {
+      const value = Number(row['Attendance ' + type]);
+      chartData.push([row['Branch Name'], value]);
+    });
+
+    const dataTable = google.visualization.arrayToDataTable(chartData);
+    const options = { title: 'Attendance: ' + type, chartArea: {width: '60%'}, hAxis: {title: 'Count'}, vAxis: {title: 'Branch'} };
+    const chart = new google.visualization.ColumnChart(document.getElementById('attendance_chart'));
+    chart.draw(dataTable, options);
+  }
+
+  function drawVehicleChart() {
+    const chartData = [['Branch', 'Vehicle Use', 'Van Use']];
+    globalData.forEach(row => {
+      chartData.push([row['Branch Name'], Number(row['Vehicle Use']), Number(row['Van Use'])]);
+    });
+
+    const dataTable = google.visualization.arrayToDataTable(chartData);
+    const options = { title: 'Vehicle & Van Use', chartArea: {width: '60%'}, hAxis: {title: 'Count'}, vAxis: {title: 'Branch'} };
+    const chart = new google.visualization.BarChart(document.getElementById('vehicle_chart'));
+    chart.draw(dataTable, options);
+  }
+
 </script>
 
 </body>
