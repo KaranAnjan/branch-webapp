@@ -320,10 +320,18 @@ function drawHoldChart() {
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
 
+  // ✅ Calculate max total for tight X-axis scaling
+  const totals = chartData.slice(1).map(row => row[1] + row[2]); // Retail Hold + WS Hold
+  const maxTotal = Math.max(...totals);
+
   const options = { 
     title: 'Hold Delivery: Retail Hold + WS Hold (in Lakh)',
     legend: { position: 'top' },
-    chartArea: { width: '60%' },
+    chartArea: { 
+      left: 60,   // ✅ same left margin as Delivery chart
+      right: 20,  // ✅ same right margin
+      width: '100%'
+    },
     colors: ['#00A651', '#22265C'],
     isStacked: true,
     annotations: {
@@ -335,6 +343,9 @@ function drawHoldChart() {
       }
     },
     hAxis: {
+      viewWindow: {
+        max: maxTotal * 1.1 // ✅ add 10% headroom
+      },
       title: 'Value (Lakh)',
       textPosition: 'out',
       gridlines: { count: 0 }
