@@ -141,12 +141,12 @@
   <input type="number" name="vehicleUse">
   <label>Van Use:</label>
   <input type="number" name="vanUse">
-	
- <label for="vehicleOutTime">First Vehicle Out Time:</label><br>
+  
+  <label for="vehicleOutTime">First Vehicle Out Time:</label><br>
   <input type="time" id="vehicleOutTime" name="vehicleOutTime" required>
-	
+
   <button type="submit" class="submit-btn">Submit</button>
-</form>
+</form>	
   </div>
 
   <!-- DASHBOARD TAB -->
@@ -155,6 +155,9 @@
 
     <div id="delivery_chart" style="width: 100%; height: 300px;"></div>
     <div id="hold_chart" style="width: 100%; height: 300px;"></div>
+
+<h4>Pending Delivery Details</h4>
+<div id="hold_table" style="width: 100%;"></div>
 
 <!-- Attendance section -->
 <h4>
@@ -230,21 +233,25 @@
   });
 
   // Load Google Charts
-  google.charts.load('current', {packages: ['corechart']});
+ google.charts.load('current', {
+  packages: ['corechart', 'table']  // ✅ added 'table'
+});
 
   let globalData = [];
 
   function drawCharts() {
-    fetch(scriptURL)
+  fetch(scriptURL)
     .then(res => res.json())
     .then(data => {
       globalData = data;
       drawDeliveryChart();
       drawHoldChart();
+      drawHoldTable();   // ✅ call it here
       drawAttendanceChart();
       drawVehicleChart();
     });
-  }
+}
+
 
 function drawDeliveryChart() {
   const chartData = [
@@ -361,6 +368,91 @@ function drawHoldChart() {
 
   const chart = new google.visualization.BarChart(document.getElementById('hold_chart'));
   chart.draw(dataTable, options);
+}
+
+function drawHoldTable() {
+  const chartData = [
+    ['Branch', 'Retail Hold Count', 'Retail Hold Value (Lakh)', 'WS Hold Count', 'WS Hold Value (Lakh)', 'Total Hold Count', 'Total Hold Value (Lakh)']
+  ];
+
+  let totalRetailCount = 0;
+  let totalWSCount = 0;
+  let totalRetailValue = 0;
+  let totalWSValue = 0;
+
+  globalData.forEach(row => {
+    const retailHoldCount = Number(row['Retail Hold Count']) || 0;
+    const wsHoldCount = Number(row['WS Hold Count']) || 0;
+    const retailHoldValue = Number(row['Retail Hold Value']) || 0;
+    const wsHoldValue = Number(row['WS Hold Value']) || 0;
+
+    const totalHoldCount = retailHoldCount + wsHoldCount;
+    const retailValueLakh = +(retailHoldValue / 100000).toFixed(2);
+    const wsValueLakh = +(wsHoldValue / 100000).toFixed(2);
+    const totalHoldValue = +(retailValueLakh + wsValueLakh).toFixed(2);
+
+    totalRetailCount += retailHoldCount;
+    totalWSCount += wsHoldCount;
+    totalRetailValue += retailHoldValue;
+    totalWSValue += wsHoldValue;
+
+    chartData.push([
+      row['Branch Name'],
+      retailHoldCount,
+      retailValueLakh,
+      wsHoldCount,
+      wsValueLakh,
+      totalHoldCount,
+      totalHoldValue
+    ]);
+  });
+
+  // ✅ Add grand total row
+  const totalCount = totalRetailCount + totalWSCount;
+  const totalValueLakh = +((totalRetailValue + totalWSValue) / 100000).toFixed(2);
+
+  chartData.push([
+    { v: 'TOTAL', p: { style: 'font-weight:bold;' } },
+    { v: totalRetailCount, p: { style: 'font-weight:bold;' } },
+    { v: +(totalRetailValue / 100000).toFixed(2), p: { style: 'font-weight:bold;' } },
+    { v: totalWSCount, p: { style: 'font-weight:bold;' } },
+    { v: +(totalWSValue / 100000).toFixed(2), p: { style: 'font-weight:bold;' } },
+    { v: totalCount, p: { style: 'font-weight:bold;' } },
+    { v: totalValueLakh, p: { style: 'font-weight:bold;' } }
+  ]);
+
+  const dataTable = google.visualization.arrayToDataTable(chartData);
+
+  const table = new google.visualization.Table(document.getElementById('hold_table'));
+  table.draw(dataTable, {
+    showRowNumber: false,
+    width: '100%',
+    allowHtml: true
+  });
+
+  // ✅ Apply header + total row background with solid green
+const tableElement = document.getElementById('hold_table').getElementsByTagName('table')[0];
+if (tableElement) {
+  // Header
+  const headerRow = tableElement.getElementsByTagName('thead')[0].rows[0];
+  headerRow.style.background = '#00A651'; // ✅ Use solid background
+  headerRow.style.backgroundImage = 'none'; // ✅ Remove gradient if any
+  headerRow.style.color = 'white';
+
+  // Also apply to each header cell for safety
+  const headerCells = headerRow.cells;
+  for (let i = 0; i < headerCells.length; i++) {
+    headerCells[i].style.background = '#00A651';
+    headerCells[i].style.backgroundImage = 'none';
+    headerCells[i].style.color = 'white';
+  }
+
+  // Total row (last row in tbody)
+  const tbodyRows = tableElement.getElementsByTagName('tbody')[0].rows;
+  const totalRow = tbodyRows[tbodyRows.length - 1];
+  totalRow.style.backgroundColor = '#00A651';
+  totalRow.style.color = 'white';
+}
 }
 
 
