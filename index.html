@@ -391,9 +391,9 @@ function drawHoldTable() {
   let totalWSHoldValue = 0;
 
   globalData.forEach(row => {
-    const retailHoldCount = Number(row['Retail Hold']) || 0;
+    const retailHoldCount = Number(row['Retail Hold Count']) || 0;
     const retailHoldValueRaw = Number(row['Retail Hold Value']) || 0;
-    const wsHoldCount = Number(row['WS Hold']) || 0;
+    const wsHoldCount = Number(row['WS Hold Count']) || 0;
     const wsHoldValueRaw = Number(row['WS Hold Value']) || 0;
 
     const totalHoldCount = retailHoldCount + wsHoldCount;
