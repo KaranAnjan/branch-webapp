@@ -82,6 +82,19 @@
   font-weight: 600;
   font-size: 16px;
 }
+
+.kpi_card {
+  background: #00A651;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  font-size: 18px;
+  text-align: center;
+  flex: 1;
+  margin: 0 10px;
+}
+
+
   </style>
 </head>
 <body>
@@ -193,6 +206,13 @@
 <h5 id="vehicle_chart_title" class="chart-subtitle">Vehicle</h5>
 <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
 
+<div id="kpi_container" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+  <div class="kpi_card" id="kpi_today_sale"></div>
+  <div class="kpi_card" id="kpi_month_sale"></div>
+  <div class="kpi_card" id="kpi_outstanding"></div>
+</div>
+
+
 <h4>Today Sale</h4>
 <div id="today_sales_chart" style="width: 100%; height: 400px;"></div>
 
@@ -267,6 +287,7 @@ let globalReportData = [];
 	  drawHoldTable();
       drawAttendanceChart();
       drawVehicleChart();
+	  drawKPIs();
       drawTodaySalesChart();   // ✅ you’ll add this
       drawMonthSalesChart();   // ✅ you’ll add this
     })
@@ -597,6 +618,32 @@ function drawVehicleChart() {
 
   const chart = new google.visualization.ColumnChart(document.getElementById('vehicle_chart'));
   chart.draw(dataTable, options);
+}
+
+function drawKPIs() {
+  let totalToday = 0;
+  let totalMonth = 0;
+  let totalOutstanding = 0;
+
+  globalReportData.forEach(row => {
+    totalToday += Number(row['Today Sale']) || 0;
+    totalMonth += Number(row['Month sale']) || 0;
+    totalOutstanding += Number(row['Total AR']) || 0; // if you have it
+  });
+
+  // format in lakh if needed
+  document.getElementById('kpi_today_sale').innerHTML = `
+    <h4>Today Sale</h4>
+    <h2>₹ ${ (totalToday).toFixed(2) } L</h2>
+  `;
+  document.getElementById('kpi_month_sale').innerHTML = `
+    <h4>Month Sale</h4>
+    <h2>₹ ${ (totalMonth).toFixed(2) } L</h2>
+  `;
+  document.getElementById('kpi_outstanding').innerHTML = `
+    <h4>Outstanding</h4>
+    <h2>₹ ${ (totalOutstanding).toFixed(2) } L</h2>
+  `;
 }
 
 function drawTodaySalesChart() {
