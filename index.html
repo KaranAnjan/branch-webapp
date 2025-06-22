@@ -371,90 +371,110 @@ function drawHoldChart() {
 }
 
 function drawHoldTable() {
+  // ✅ 1) Build table columns: add Total Hold Count & Total Hold Value
   const chartData = [
-    ['Branch', 'Retail Hold Count', 'Retail Hold Value (Lakh)', 'WS Hold Count', 'WS Hold Value (Lakh)', 'Total Hold Count', 'Total Hold Value (Lakh)']
+    [
+      'Branch',
+      'Retail Hold Count',
+      'Retail Hold Value (Lakh)',
+      'WS Hold Count',
+      'WS Hold Value (Lakh)',
+      'Total Hold Count',
+      'Total Hold Value (Lakh)'
+    ]
   ];
 
-  let totalRetailCount = 0;
-  let totalWSCount = 0;
-  let totalRetailValue = 0;
-  let totalWSValue = 0;
+  // ✅ 2) Prepare totals
+  let totalRetailHoldCount = 0;
+  let totalRetailHoldValue = 0;
+  let totalWSHoldCount = 0;
+  let totalWSHoldValue = 0;
 
   globalData.forEach(row => {
-    const retailHoldCount = Number(row['Retail Hold Count']) || 0;
-    const wsHoldCount = Number(row['WS Hold Count']) || 0;
-    const retailHoldValue = Number(row['Retail Hold Value']) || 0;
-    const wsHoldValue = Number(row['WS Hold Value']) || 0;
+    const retailHoldCount = Number(row['Retail Hold']) || 0;
+    const retailHoldValueRaw = Number(row['Retail Hold Value']) || 0;
+    const wsHoldCount = Number(row['WS Hold']) || 0;
+    const wsHoldValueRaw = Number(row['WS Hold Value']) || 0;
 
     const totalHoldCount = retailHoldCount + wsHoldCount;
-    const retailValueLakh = +(retailHoldValue / 100000).toFixed(2);
-    const wsValueLakh = +(wsHoldValue / 100000).toFixed(2);
-    const totalHoldValue = +(retailValueLakh + wsValueLakh).toFixed(2);
+    const totalHoldValueRaw = retailHoldValueRaw + wsHoldValueRaw;
 
-    totalRetailCount += retailHoldCount;
-    totalWSCount += wsHoldCount;
-    totalRetailValue += retailHoldValue;
-    totalWSValue += wsHoldValue;
+    // Add to totals
+    totalRetailHoldCount += retailHoldCount;
+    totalRetailHoldValue += retailHoldValueRaw;
+    totalWSHoldCount += wsHoldCount;
+    totalWSHoldValue += wsHoldValueRaw;
 
     chartData.push([
       row['Branch Name'],
       retailHoldCount,
-      retailValueLakh,
+      +(retailHoldValueRaw / 100000).toFixed(2),
       wsHoldCount,
-      wsValueLakh,
+      +(wsHoldValueRaw / 100000).toFixed(2),
       totalHoldCount,
-      totalHoldValue
+      +(totalHoldValueRaw / 100000).toFixed(2)
     ]);
   });
 
-  // ✅ Add grand total row
-  const totalCount = totalRetailCount + totalWSCount;
-  const totalValueLakh = +((totalRetailValue + totalWSValue) / 100000).toFixed(2);
+  // ✅ 3) Add final TOTAL row with sums (raw counts, values divided)
+  const grandTotalHoldCount = totalRetailHoldCount + totalWSHoldCount;
+  const grandTotalHoldValue = totalRetailHoldValue + totalWSHoldValue;
 
   chartData.push([
-    { v: 'TOTAL', p: { style: 'font-weight:bold;' } },
-    { v: totalRetailCount, p: { style: 'font-weight:bold;' } },
-    { v: +(totalRetailValue / 100000).toFixed(2), p: { style: 'font-weight:bold;' } },
-    { v: totalWSCount, p: { style: 'font-weight:bold;' } },
-    { v: +(totalWSValue / 100000).toFixed(2), p: { style: 'font-weight:bold;' } },
-    { v: totalCount, p: { style: 'font-weight:bold;' } },
-    { v: totalValueLakh, p: { style: 'font-weight:bold;' } }
+    'TOTAL',
+    totalRetailHoldCount,
+    +(totalRetailHoldValue / 100000).toFixed(2),
+    totalWSHoldCount,
+    +(totalWSHoldValue / 100000).toFixed(2),
+    grandTotalHoldCount,
+    +(grandTotalHoldValue / 100000).toFixed(2)
   ]);
 
+  // ✅ 4) Draw the table
   const dataTable = google.visualization.arrayToDataTable(chartData);
 
-  const table = new google.visualization.Table(document.getElementById('hold_table'));
-  table.draw(dataTable, {
+  const options = {
     showRowNumber: false,
-    width: '100%',
-    allowHtml: true
-  });
+    allowHtml: true,
+    width: '100%'
+  };
 
-  // ✅ Apply header + total row background with solid green
-const tableElement = document.getElementById('hold_table').getElementsByTagName('table')[0];
-if (tableElement) {
-  // Header
-  const headerRow = tableElement.getElementsByTagName('thead')[0].rows[0];
-  headerRow.style.background = '#00A651'; // ✅ Use solid background
-  headerRow.style.backgroundImage = 'none'; // ✅ Remove gradient if any
-  headerRow.style.color = 'white';
+  const chart = new google.visualization.Table(document.getElementById('hold_table'));
+  chart.draw(dataTable, options);
 
-  // Also apply to each header cell for safety
-  const headerCells = headerRow.cells;
-  for (let i = 0; i < headerCells.length; i++) {
-    headerCells[i].style.background = '#00A651';
-    headerCells[i].style.backgroundImage = 'none';
-    headerCells[i].style.color = 'white';
+  // ✅ 5) Style header, cells & TOTAL row
+  const tableElement = document.getElementById('hold_table').getElementsByTagName('table')[0];
+  if (tableElement) {
+    // Header
+    const headerCells = tableElement.getElementsByTagName('thead')[0].rows[0].cells;
+    for (let i = 0; i < headerCells.length; i++) {
+      headerCells[i].style.whiteSpace = 'normal';
+      headerCells[i].style.wordWrap = 'break-word';
+      headerCells[i].style.maxWidth = '100px';
+      headerCells[i].style.background = '#00A651';
+      headerCells[i].style.color = 'white';
+      headerCells[i].style.padding = '8px';
+    }
+
+    // Body
+    const bodyRows = tableElement.getElementsByTagName('tbody')[0].rows;
+    for (let r = 0; r < bodyRows.length; r++) {
+      const cells = bodyRows[r].cells;
+      for (let c = 0; c < cells.length; c++) {
+        cells[c].style.whiteSpace = 'normal';
+        cells[c].style.wordWrap = 'break-word';
+        cells[c].style.maxWidth = '100px';
+        cells[c].style.padding = '8px';
+      }
+    }
+
+    // TOTAL row
+    const totalRow = bodyRows[bodyRows.length - 1];
+    totalRow.style.backgroundColor = '#00A651';
+    totalRow.style.color = 'white';
+    totalRow.style.fontWeight = 'bold';
   }
-
-  // Total row (last row in tbody)
-  const tbodyRows = tableElement.getElementsByTagName('tbody')[0].rows;
-  const totalRow = tbodyRows[tbodyRows.length - 1];
-  totalRow.style.backgroundColor = '#00A651';
-  totalRow.style.color = 'white';
 }
-}
-
 
 function drawAttendanceChart() {
   const type = document.getElementById('attendanceSelector').value;
