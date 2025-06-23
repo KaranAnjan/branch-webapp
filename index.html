@@ -3,42 +3,113 @@
 <head>
   <title>Branch Data Web App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>  
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      padding: 10px;
-      line-height: 1.6;
     }
-    h2, h3 {
-      text-align: center;
+
+    .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0; /* ✅ Updated: soft shade instead of green */
+  color: #333;
+  padding: 10px;
+  position: relative;
+}
+
+
+    .topbar img {
+      height: 30px;
+      margin-right: 10px;
     }
-    .tabs {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .tabs button {
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 16px;
-      border: none;
+	
+.section-heading {
+  text-align: center;
+  background-color: #00A651; /* your green brand color */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+    .menu-toggle {
+      position: absolute;
+      left: 15px;
+      font-size: 24px;
       cursor: pointer;
     }
-    .tabs button.active {
-      background-color: #00A651;
+
+    .container {
+      display: flex;
+      height: calc(100vh - 50px);
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #00A651;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar button {
+      background: none;
+      border: none;
       color: white;
+      padding: 15px;
+      text-align: left;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
     }
-    .tabs button:not(.active) {
-      background-color: #eee;
-      color: #333;
+
+    .sidebar button.active {
+      background: #008f46;
     }
-    .tab {
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .page {
       display: none;
     }
-    .tab.active {
+
+    .page.active {
       display: block;
     }
-    form {
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 50px;
+        left: 0;
+        height: calc(100% - 50px);
+        transform: translateX(-100%);
+        z-index: 1000;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+    }
+ form {
       max-width: 400px;
       margin: 0 auto;
     }
@@ -62,20 +133,19 @@
   padding-bottom: 5px;
 }
 
-.submit-btn {
-  background-color: #00A651;
-  color: white;
-  font-size: 18px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  cursor: pointer;
-}
 
-.submit-btn:hover {
-  background-color: #008f46;
-}
+    .submit-btn {
+      background: #00A651;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #008f46;
+    }
+	
+	}
 .chart-subtitle {
   text-align: center;
   margin: 5px 0 15px 0;
@@ -127,31 +197,34 @@
     font-size: 12px;
   }
 }
-
-
-
-
+	
   </style>
 </head>
 <body>
 
-<h2 style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://raw.githubusercontent.com/KaranAnjan/logo/main/primeeast_logo.png" alt="Logo" style="height: 40px; margin-right: 10px;">
-  Branch Data Web App
-</h2>
-
-
-
-
-  <div class="tabs">
-    <button id="entryBtn" onclick="showTab('entry')">Data Entry</button>
-    <button id="dashboardBtn" onclick="showTab('dashboard')">Dashboard</button>
+  <!-- ✅ Top Bar -->
+  <div class="topbar">
+    <span class="menu-toggle" onclick="toggleSidebar()">☰</span>
+    <img src="https://raw.githubusercontent.com/KaranAnjan/logo/main/primeeast_logo.png" alt="Logo">
+    <span>Branch Data Web App</span>
   </div>
 
-  <!-- DATA ENTRY TAB -->
-  <div id="entry" class="tab">
-    <h3>Data Entry</h3>
-<form id="branchForm">
+  <div class="container">
+    <!-- ✅ Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <button onclick="showPage('entry')" id="entryBtn">Data Entry</button>
+      <button onclick="showPage('delivery')" id="deliveryBtn">Delivery</button>
+      <button onclick="showPage('sales')" id="salesBtn">Sales & AR</button>
+    </div>
+
+    <!-- ✅ Main Content -->
+    <div class="content">
+
+      <!-- Data Entry -->
+      <div id="entry" class="page">
+	  <h2 class="section-heading">Data Entry</h2>
+
+       <form id="branchForm">
   <label>Branch Name:</label>
   <select name="branchName" required>
     <option value="">--Select Branch--</option>
@@ -201,116 +274,80 @@
   <input type="time" id="vehicleOutTime" name="vehicleOutTime" required>
 
   <button type="submit" class="submit-btn">Submit</button>
-</form>	
-  </div>
+        </form>
+      </div>
 
-  <!-- DASHBOARD TAB -->
-  <div id="dashboard" class="tab">
-    <h3>Dashboard</h3>
+     <!-- ✅ DELIVERY PAGE -->
+<div id="delivery" class="page">
+  <h2 class="section-heading">Delivery Dashboard</h2>
 
-    <div id="delivery_chart" style="width: 100%; height: 300px;"></div>
-    <div id="hold_chart" style="width: 100%; height: 300px;"></div>
+  <!-- Delivery charts -->
+  <div id="delivery_chart" style="height:300px;"></div>
+  <div id="hold_chart" style="height:300px;"></div>
 
-<h4>Pending Delivery Details</h4>
-<div id="hold_table" style="width: 100%;"></div>
+  <!-- ✅ Pending Delivery Table -->
+  <h4>Pending Delivery Details</h4>
+  <div id="hold_table" style="width: 100%;"></div>
 
+  <!-- ✅ Attendance section -->
+  <h4>
+    Attendance:
+    <select id="attendanceSelector" onchange="drawAttendanceChart()">
+      <option value="ALL">ALL</option>
+      <option value="DB">DB</option>
+      <option value="GH">GH</option>
+      <option value="DLO">DLO</option>
+    </select>
+  </h4>
+  <h5 id="attendance_chart_title" class="chart-subtitle">Attendance</h5>
+  <div id="attendance_chart" style="width: 100%; height: 300px;"></div>
 
-
-<!-- Attendance section -->
-<h4>
-  Attendance:
-  <select id="attendanceSelector" onchange="drawAttendanceChart()">
-    <option value="ALL">ALL</option>
-    <option value="DB">DB</option>
-    <option value="GH">GH</option>
-    <option value="DLO">DLO</option>
-  </select>
-</h4>
-<h5 id="attendance_chart_title" class="chart-subtitle">Attendance</h5>
-<div id="attendance_chart" style="width: 100%; height: 300px;"></div>
-
-
-<!-- Vehicle section -->
-<h4>
-  Vehicle:
-  <select id="vehicleSelector" onchange="drawVehicleChart()">
-    <option value="ALL">ALL</option>
-    <option value="Vehicle Use">Vehicle Use</option>
-    <option value="Van Use">Van Use</option>
-  </select>
-</h4>
-<h5 id="vehicle_chart_title" class="chart-subtitle">Vehicle</h5>
-<div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
-
-<div id="kpi_container" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
-  <div class="kpi_card" id="kpi_today_sale"></div>
-  <div class="kpi_card" id="kpi_month_sale"></div>
-  <div class="kpi_card" id="kpi_outstanding"></div>
+  <!-- ✅ Vehicle section -->
+  <h4>
+    Vehicle:
+    <select id="vehicleSelector" onchange="drawVehicleChart()">
+      <option value="ALL">ALL</option>
+      <option value="Vehicle Use">Vehicle Use</option>
+      <option value="Van Use">Van Use</option>
+    </select>
+  </h4>
+  <h5 id="vehicle_chart_title" class="chart-subtitle">Vehicle</h5>
+  <div id="vehicle_chart" style="width: 100%; height: 300px;"></div>
 </div>
 
 
-<h4>Today Sale</h4>
-<div id="today_sales_chart" style="width: 100%; height: 400px;"></div>
 
-<h4>Month Sale</h4>
-<div id="month_sales_chart" style="width: 100%; height: 400px;"></div>
+      <!-- Sales & AR Dashboard -->
+      <div id="sales" class="page">
+       <h2 class="section-heading">Sales & AR Dashboard</h2>
+	   
+	     <!-- KPI scorecard -->
+  
+	<div id="kpi_container" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+		<div class="kpi_card" id="kpi_today_sale"></div>
+		<div class="kpi_card" id="kpi_month_sale"></div>
+		<div class="kpi_card" id="kpi_outstanding"></div>
+		</div>
 
+        <div id="today_sales_chart" style="height:300px;"></div>
+        <div id="month_sales_chart" style="height:300px;"></div>
+      </div>
 
-<script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec'; // Replace with your Apps Script URL
+    </div>
+  </div>
 
-  function showTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.getElementById(tabName).classList.add('active');
+  <!-- ✅ Scripts -->
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbywerkpXiGd46-0c6Dm0N-Fq_mDH8gWr_OSqYObQ0nn3Dyxfh8vocf5zLWlFSOxjATv8A/exec';  // 🔑 Replace with your Apps Script URL
+    let globalData = [];
+    let globalReportData = [];
 
-    // Update active button styles
-    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-    if (tabName === 'entry') {
-      document.getElementById('entryBtn').classList.add('active');
-    } else {
-      document.getElementById('dashboardBtn').classList.add('active');
-    }
-
-    // If dashboard, draw charts
-    if (tabName === 'dashboard') {
-      drawCharts();
-    }
-  }
-
-  // Handle form submit
-  const form = document.getElementById('branchForm');
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const data = {};
-    formData.forEach((value, key) => { data[key] = value; });
-
-    fetch(scriptURL, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(res => {
-      alert('Data submitted successfully!');
-      form.reset();
-    })
-    .catch(err => {
-      alert('Error submitting data');
-      console.error(err);
-    });
-  });
-
-  // Load Google Charts
- google.charts.load('current', {
-  packages: ['corechart', 'table']  // ✅ added 'table'
-});
-
- let globalData = [];
-let globalReportData = [];
+      // Load Google Charts
+google.charts.load('current', {'packages':['corechart', 'table']});
+google.charts.setOnLoadCallback(initDashboard);
 
 
- function drawCharts() {
+ function initDashboard() {
   fetch(scriptURL)
     .then(res => res.json())
     .then(allData => {
@@ -330,123 +367,90 @@ let globalReportData = [];
     .catch(err => console.error('Error fetching data:', err));
 }
 
+    // Form submission
+    const form = document.getElementById('branchForm');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((value, key) => { data[key] = value; });
 
-function drawDeliveryChart() {
-  const chartData = [
-    ['Branch', 'Retail Value', 'WS Value', { role: 'annotation' }]
-  ];
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert('Data submitted!');
+        form.reset();
+      })
+      .catch(err => {
+        alert('Error submitting data');
+        console.error(err);
+      });
+    });
 
-  globalData.forEach(row => {
-    const retailRaw = Number(row['Retail Value']) || 0;
-    const wsRaw = Number(row['WS Value']) || 0;
-
-    const retail = +(retailRaw / 100000).toFixed(2);
-    const ws = +(wsRaw / 100000).toFixed(2);
-    const total = +(retail + ws).toFixed(2);
-
-    chartData.push([row['Branch Name'], retail, ws, total]);
-  });
-
-  const dataTable = google.visualization.arrayToDataTable(chartData);
-
-  // ✅ Calculate max total for tight X-axis
-  const totals = chartData.slice(1).map(row => row[1] + row[2]); // Retail + WS
-  const maxTotal = Math.max(...totals);
-
-  const options = { 
-    title: 'Delivery: Retail + WS Total (in Lakh)',
-    legend: { position: 'top' },
-    chartArea: { 
-      left: 60,
-      right: 20,
-      width: '100%'
-    },
-    colors: ['#00A651', '#22265C'],
-    isStacked: true,
-    annotations: {
-      alwaysOutside: true,
-      textStyle: {
-        fontSize: 12,
-        color: '#000',
-        auraColor: 'none'
-      }
-    },
-    hAxis: {
-      viewWindow: {
-        max: maxTotal * 1.1  // ✅ Add 10% headroom for nice look
-      },
-      title: 'Value (Lakh)',
-      textPosition: 'out',
-      gridlines: { count: 0 }
-    },
-    vAxis: {
-      textPosition: 'out',
-      gridlines: { color: 'transparent' }
+  
+    // Sidebar toggle for mobile
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
     }
-  };
 
-  const chart = new google.visualization.BarChart(document.getElementById('delivery_chart'));
-  chart.draw(dataTable, options);
-}
+    // Page switcher
+    function showPage(pageName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
 
+      document.getElementById(pageName).classList.add('active');
+      document.getElementById(pageName + 'Btn').classList.add('active');
 
-function drawHoldChart() {
-  const chartData = [
-    ['Branch', 'Retail Hold Value', 'WS Hold Value', { role: 'annotation' }]
-  ];
-
-  globalData.forEach(row => {
-    const retailHold = Number(row['Retail Hold Value']) || 0;
-    const wsHold = Number(row['WS Hold Value']) || 0;
-
-    const retail = +(retailHold / 100000).toFixed(2);
-    const ws = +(wsHold / 100000).toFixed(2);
-    const total = +(retail + ws).toFixed(2);
-
-    chartData.push([row['Branch Name'], retail, ws, total]);
-  });
-
-  const dataTable = google.visualization.arrayToDataTable(chartData);
-
-  // ✅ Calculate max total for tight X-axis scaling
-  const totals = chartData.slice(1).map(row => row[1] + row[2]); // Retail Hold + WS Hold
-  const maxTotal = Math.max(...totals);
-
-  const options = { 
-    title: 'Hold Delivery: Retail Hold + WS Hold (in Lakh)',
-    legend: { position: 'top' },
-    chartArea: { 
-      left: 60,   // ✅ same left margin as Delivery chart
-      right: 20,  // ✅ same right margin
-      width: '100%'
-    },
-    colors: ['#00A651', '#22265C'],
-    isStacked: true,
-    annotations: {
-      alwaysOutside: true,
-      textStyle: {
-        fontSize: 12,
-        color: '#000',
-        auraColor: 'none'
+      if (pageName === 'delivery') {
+        drawDeliveryChart();
+        drawHoldChart();
+		drawAttendanceChart();
+		drawVehicleChart();
+      } else if (pageName === 'sales') {
+		drawKPIs();
+        drawTodaySalesChart();
+        drawMonthSalesChart();
       }
-    },
-    hAxis: {
-      viewWindow: {
-        max: maxTotal * 1.1 // ✅ add 10% headroom
-      },
-      title: 'Value (Lakh)',
-      textPosition: 'out',
-      gridlines: { count: 0 }
-    },
-    vAxis: {
-      textPosition: 'out',
-      gridlines: { color: 'transparent' }
-    }
-  };
 
-  const chart = new google.visualization.BarChart(document.getElementById('hold_chart'));
-  chart.draw(dataTable, options);
-}
+      // Hide sidebar on mobile after selection
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.remove('show');
+      }
+    }
+
+// ✅ Open SALES page by default when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  showPage('sales');
+});
+
+
+    // Charts
+    function drawDeliveryChart() {
+      const chartData = [['Branch', 'Retail Value', 'WS Value', {role:'annotation'}]];
+      globalData.forEach(row => {
+        const r = Number(row['Retail Value']) / 100000;
+        const w = Number(row['WS Value']) / 100000;
+        chartData.push([row['Branch Name'], r, w, (r+w).toFixed(2)]);
+      });
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      new google.visualization.BarChart(document.getElementById('delivery_chart')).draw(dataTable, { isStacked:true });
+    }
+	
+	
+
+    function drawHoldChart() {
+      const chartData = [['Branch', 'Retail Hold', 'WS Hold', {role:'annotation'}]];
+      globalData.forEach(row => {
+        const r = Number(row['Retail Hold Value']) / 100000;
+        const w = Number(row['WS Hold Value']) / 100000;
+        chartData.push([row['Branch Name'], r, w, (r+w).toFixed(2)]);
+      });
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      new google.visualization.BarChart(document.getElementById('hold_chart')).draw(dataTable, { isStacked:true });
+    }
 
 function drawHoldTable() {
   // ✅ 1) Build table columns: add Total Hold Count & Total Hold Value
@@ -553,7 +557,6 @@ function drawHoldTable() {
     totalRow.style.fontWeight = 'bold';
   }
 }
-
 
 
 
@@ -682,36 +685,22 @@ function drawKPIs() {
   `;
 }
 
-function drawTodaySalesChart() {
-  // ✅ Build data table: Branch | Retail | WS | Annotation (total)
-  const chartData = [
-    ['Branch', 'Retail', 'WS', { role: 'annotation' }]
-  ];
-
+ function drawTodaySalesChart() {
+  const chartData = [['Branch', 'Retail', 'WS', { role: 'annotation' }]];
   globalReportData.forEach(row => {
-    const branch = row['Branch'];
-    const retail = Number(row['Retail']) || 0;
-    const ws = Number(row['WS']) || 0;
-    const total = retail + ws;
-    chartData.push([branch, retail, ws, total]);
+    const r = Number(row['Retail']);
+    const w = Number(row['WS']);
+    chartData.push([row['Branch'], r, w, r + w]);
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
 
-  // ✅ Compute max for nice axis scale
-  const totals = chartData.slice(1).map(row => row[1] + row[2]);
-  const maxTotal = Math.max(...totals);
-
   const options = {
-    title: 'Today Sale: Retail + WS',
+    title: 'Today Sales',
     isStacked: true,
+    colors: ['#22265C', '#00A651'], // ✅ Green for Ws, Blue for Retail
     legend: { position: 'top' },
-    chartArea: {
-      left: 60,
-      right: 20,
-      width: '100%'
-    },
-    colors: ['#22265C', '#00A651'],
+    chartArea: { width: '80%' },
     annotations: {
       alwaysOutside: true,
       textStyle: {
@@ -720,49 +709,27 @@ function drawTodaySalesChart() {
         auraColor: 'none'
       }
     },
-    vAxis: {
-      viewWindow: {
-        max: maxTotal * 1.1
-      },
-      
-      gridlines: { color: 'transparent' }
-    },
-    hAxis: {
-      textPosition: 'out'
-    }
+    vAxis: { gridlines: { color: 'transparent' }},
+    hAxis: {gridlines: { color: 'transparent' }}
   };
 
   const chart = new google.visualization.ColumnChart(document.getElementById('today_sales_chart'));
   chart.draw(dataTable, options);
 }
 
-function drawMonthSalesChart() {
-  // ✅ Build data table: Branch | Month Sale | Annotation
-  const chartData = [
-    ['Branch', 'Month Sale', { role: 'annotation' }]
-  ];
-
+    function drawMonthSalesChart() {
+  const chartData = [['Branch', 'Month Sale']];
   globalReportData.forEach(row => {
-    const branch = row['Branch'];
-    const monthSale = Number(row['Month sale']) || 0;
-    chartData.push([branch, monthSale, monthSale]);
+    chartData.push([row['Branch'], Number(row['Month sale'])]);
   });
 
   const dataTable = google.visualization.arrayToDataTable(chartData);
 
-  // ✅ Find max for axis scaling
-  const totals = chartData.slice(1).map(row => row[1]);
-  const maxTotal = Math.max(...totals);
-
   const options = {
-    title: 'Month Sale',
+  title: 'Month Sales',
     legend: 'none',
-    chartArea: {
-      left: 60,
-      right: 20,
-      width: '100%'
-    },
     colors: ['#00A651'],
+    chartArea: { width: '80%' },
     annotations: {
       alwaysOutside: true,
       textStyle: {
@@ -772,25 +739,30 @@ function drawMonthSalesChart() {
       }
     },
     vAxis: {
-      viewWindow: {
-        max: maxTotal * 1.1
-      },
       gridlines: { color: 'transparent' }
     },
     hAxis: {
-      textPosition: 'out'
+      gridlines: { color: 'transparent' }
     }
   };
 
   const chart = new google.visualization.ColumnChart(document.getElementById('month_sales_chart'));
-  chart.draw(dataTable, options);
+
+  // ✅ Wrap data in DataView to auto-create annotations
+  const view = new google.visualization.DataView(dataTable);
+  view.setColumns([0, 1, {
+    calc: 'stringify',
+    sourceColumn: 1,
+    type: 'string',
+    role: 'annotation'
+  }]);
+
+  chart.draw(view, options);
 }
 
-
-  // ✅ On page load: show dashboard by default
-  window.onload = () => showTab('dashboard');
-
-</script>
+   
+	window.onload = () => showTab('sales');
+  </script>
 
 </body>
 </html>
