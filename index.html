@@ -134,16 +134,23 @@
 }
 
 
-    .submit-btn {
-      background: #00A651;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+ .submit-btn {
+  display: block;          /* make it a block element */
+  width: 100%;             /* full width of parent container */
+  padding: 12px 20px;      /* enough padding for height */
+  background: #00A651;     /* your green */
+  color: white;
+  border: none;
+  border-radius: 5px;      /* rounded corners */
+  font-size: 16px;         /* bigger text */
+  font-weight: bold;       /* bold text */
+  cursor: pointer;
+  transition: background 0.3s; /* smooth hover */
+}
 
-    .submit-btn:hover {
-      background: #008f46;
-    }
+.submit-btn:hover {
+  background: #008f46;  /* darker green on hover */
+}
 	
 	}
 .chart-subtitle {
