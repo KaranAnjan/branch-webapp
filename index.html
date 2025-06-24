@@ -331,6 +331,13 @@
 
         <div id="today_sales_chart" style="height:300px;"></div>
         <div id="month_sales_chart" style="height:300px;"></div>
+		
+		<h3 style="text-align:center; margin: 10px 0;">Outstanding Details</h3>
+		<div id="outstanding_table_container" style="overflow-x:auto; width: 100%;">
+		<div id="outstanding_table"></div>
+				
+				</div>
+
       </div>
 
     </div>
@@ -362,7 +369,8 @@ google.charts.setOnLoadCallback(initDashboard);
       drawVehicleChart();
 	  drawKPIs();
       drawTodaySalesChart();   // ✅ you’ll add this
-      drawMonthSalesChart();   // ✅ you’ll add this
+      drawMonthSalesChart();
+	drawOutstandingTable();	  // ✅ you’ll add this
     })
     .catch(err => console.error('Error fetching data:', err));
 }
@@ -413,6 +421,7 @@ google.charts.setOnLoadCallback(initDashboard);
 		drawKPIs();
         drawTodaySalesChart();
         drawMonthSalesChart();
+		drawOutstandingTable();
       }
 
       // Hide sidebar on mobile after selection
@@ -759,6 +768,87 @@ function drawKPIs() {
 
   chart.draw(view, options);
 }
+
+function drawOutstandingTable() {
+  const chartData = [
+    ['Branch', '0-2 days', '3-10 days', 'Above 10 Days', 'Total AR']
+  ];
+
+  let total0to2 = 0;
+  let total3to10 = 0;
+  let totalAbove10 = 0;
+  let totalAR = 0;
+
+  globalReportData.forEach(row => {
+    const b = row['Branch'];
+    const a = Number(row['0-2 days']) || 0;
+    const b1 = Number(row['3-10 days']) || 0;
+    const c = Number(row['Above 10 Days']) || 0;
+    const d = Number(row['Total AR']) || 0;
+
+    chartData.push([b, a, b1, c, d]);
+
+    total0to2 += a;
+    total3to10 += b1;
+    totalAbove10 += c;
+    totalAR += d;
+  });
+
+  chartData.push([
+    'GRAND TOTAL',
+    total0to2,
+    total3to10,
+    totalAbove10,
+    totalAR
+  ]);
+
+  const dataTable = google.visualization.arrayToDataTable(chartData);
+
+  const options = {
+    showRowNumber: false,
+    allowHtml: true,
+    width: '100%'
+  };
+
+  const chart = new google.visualization.Table(document.getElementById('outstanding_table'));
+  chart.draw(dataTable, options);
+
+  // ✅ Responsive styling
+  const tableElement = document.getElementById('outstanding_table').getElementsByTagName('table')[0];
+  if (tableElement) {
+    // Header
+    const headerCells = tableElement.getElementsByTagName('thead')[0].rows[0].cells;
+    for (let i = 0; i < headerCells.length; i++) {
+      headerCells[i].style.background = '#22265C';
+      headerCells[i].style.color = 'white';
+      headerCells[i].style.padding = '8px';
+      headerCells[i].style.whiteSpace = 'normal'; // ✅ Wrap text
+      headerCells[i].style.wordWrap = 'break-word';
+      headerCells[i].style.maxWidth = '100px'; // ✅ Limit width
+      headerCells[i].style.textAlign = 'center';
+    }
+
+    // Body cells
+    const bodyRows = tableElement.getElementsByTagName('tbody')[0].rows;
+    for (let r = 0; r < bodyRows.length; r++) {
+      const cells = bodyRows[r].cells;
+      for (let c = 0; c < cells.length; c++) {
+        cells[c].style.padding = '8px';
+        cells[c].style.whiteSpace = 'normal';
+        cells[c].style.wordWrap = 'break-word';
+        cells[c].style.maxWidth = '100px';
+        cells[c].style.textAlign = 'none';
+      }
+    }
+
+    // GRAND TOTAL row styling
+    const totalRow = bodyRows[bodyRows.length - 1];
+    totalRow.style.backgroundColor = '#22265C';
+    totalRow.style.color = 'white';
+    totalRow.style.fontWeight = 'bold';
+  }
+}
+
 
    
 	window.onload = () => showTab('sales');
